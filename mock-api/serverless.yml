@@ -1,0 +1,72 @@
+service: mock-api
+
+provider:
+  name: aws
+  runtime: python3.8
+
+  stage: dev
+  region: ap-southeast-2
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:GetItem"
+      Resource:
+        - Fn::GetAtt: [ 'MockDataTable', 'Arn' ]
+
+custom:
+  API_CERTIFICATE: ${env:MOCK_API_CERTIFICATE}
+  API_DOMAIN: ${env:MOCK_API_DOMAIN}
+
+functions:
+  mockapilambda:
+    handler: handler.request
+    environment:
+      MOCKAPI_TABLE:
+        Ref: MockDataTable
+    events:
+      - http: ANY /
+      - http: 'ANY {proxy+}'
+
+resources:
+  Resources:
+    MockApiDomain:
+      Type: AWS::ApiGateway::DomainName
+      Properties:
+        RegionalCertificateArn: ${self:custom.API_CERTIFICATE}
+        DomainName: ${self:custom.API_DOMAIN}
+        SecurityPolicy: TLS_1_2
+        EndpointConfiguration:
+          Types:
+            - REGIONAL
+    MockApiDomainMap:
+      Type: AWS::ApiGateway::BasePathMapping
+      Properties:
+        DomainName:
+          Ref: MockApiDomain
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        Stage: ${self:provider.stage}
+    MockDataTable:
+      Type: AWS::DynamoDB::Table
+      Properties:      
+        ProvisionedThroughput: 
+          ReadCapacityUnits: "5"
+          WriteCapacityUnits: "1"
+        AttributeDefinitions:
+          - AttributeName: "Hostname"
+            AttributeType: "S"
+          - AttributeName: "Path"
+            AttributeType: "S"
+        KeySchema:
+          - AttributeName: "Hostname"
+            KeyType: "HASH"
+          - AttributeName: "Path"
+            KeyType: "RANGE"
+  Outputs:
+    MockApiDomain:
+      Description: "Mock API CNAME"
+      Value:
+        Fn::GetAtt:
+          - MockApiDomain 
+          - RegionalDomainName
