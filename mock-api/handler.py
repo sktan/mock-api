@@ -57,7 +57,7 @@ def request(event, context):
                 # Otherwise return a standard access denied response.
                 else:
                     response = {
-                        "statusCode": 403,
+                        "statusCode": 401,
                         "body":  json.dumps({
                             "Errors": [
                                 "This resource requires authorization to access"
