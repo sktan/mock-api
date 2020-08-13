@@ -35,7 +35,7 @@ def request(event, context):
 
     try:
         # Attempt to retrieve an item from the DynamoDB table
-        response = dynamodb_table.get_item(Key={
+        dynamodb_result = dynamodb_table.get_item(Key={
             'Hostname': hostname,
             'Path': path
         })
@@ -43,8 +43,8 @@ def request(event, context):
         # Log the error message to cloudwatch
         logging.info(e.response['Error']['Message'])
     else:
-        if 'Item' in response:
-            entry = response['Item']
+        if 'Item' in dynamodb_result:
+            entry = dynamodb_result['Item']
             # Check if authentication is required
             if 'Auth' in entry and entry['Auth']:
                 # Check if Authorization header is there and 
