@@ -25,8 +25,14 @@ functions:
       MOCKAPI_TABLE:
         Ref: MockDataTable
     events:
-      - http: ANY /
-      - http: 'ANY {proxy+}'
+      - http:
+          path: /
+          method: ANY
+          cors: true
+      - http:
+          path: '{proxy+}'
+          method: ANY
+          cors: true
 
 resources:
   Resources:

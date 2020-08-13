@@ -79,5 +79,8 @@ def request(event, context):
                     "statusCode": 200,
                     "body": get_data(entry)
                 }
-
+    response['headers'] = dict()
+    response['headers']['Access-Control-Allow-Headers'] = "Authorization,Content-Type"
+    response['headers']['Access-Control-Allow-Origin'] = "*"
+    
     return response
