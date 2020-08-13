@@ -1,8 +1,17 @@
 import json
 import os
+import decimal
 import logging
 import boto3
 from botocore.exceptions import ClientError
+
+class DefaultEncoder(json.JSONEncoder):
+    """ JSON Encoding helper """
+    def default(self, item):
+        """ Encoding Helper """
+        if isinstance(item, decimal.Decimal):
+            return float(item)
+        return super(DefaultEncoder, self).default(item)
 
 def get_data(entry):
     """ Gets the data from the DynamoDB entry """
@@ -11,7 +20,7 @@ def get_data(entry):
     }
     if 'Data' in entry:
         response = entry['Data']
-    return json.dumps(response)
+    return json.dumps(response, cls=DefaultEncoder)
 
 def request(event, context):
     """ Handles all requests coming into the API Gateway """
